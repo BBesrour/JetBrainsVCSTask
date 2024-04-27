@@ -39,7 +39,8 @@ public class WebController {
         model.addAttribute("accessToken", accessToken);
         model.addAttribute("ignoreCase", ignoreCase);
 
-        model.addAttribute("repoNames", gitHubService.getReposName());
+        model.addAttribute("reposName", gitHubService.getReposName());
+        model.addAttribute("reposUrl", gitHubService.getReposUrl());
         model.addAttribute("reposContainsHello", gitHubService.getReposContainsHello());
         return "form";
     }

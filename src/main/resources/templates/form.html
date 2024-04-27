@@ -1,27 +1,52 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <title>Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 </head>
 <body>
-<form action="/submit" method="post">
-    <label for="orgUrl">GitHub organization link</label>
-    <input type="url" id="orgUrl" name="orgUrl" th:value="${orgUrl}">
-    <label for="accessToken">GitHub access token</label>
-    <input type="text" id="accessToken" name="accessToken" th:value="${accessToken}">
-    <!-- Add a checkbox for case sensitivity -->
-    <label for="ignoreCase">Ignore case (When checked, the search will be case-insensitive)</label>
-    <input type="checkbox" id="ignoreCase" name="ignoreCase" th:checked="${ignoreCase}">
-    <button type="submit">Submit</button>
-</form>
-<p th:if="${orgUrl}" th:text="'Organization Name: ' + ${orgName}"></p>
-<p th:if="${accessToken}" th:text="'Access Token: ' + ${accessToken}"></p>
-<p th:if="${errorMessage}" th:text="${errorMessage}" style="color: red;"></p>
+<div class="container m-2">
+    <form action="/submit" method="post" class="mb-3">
+        <div class="mb-3 row g-3 align-items-center">
+            <div class="col-2">
+                <label for="orgUrl" class="form-label">GitHub Organization link</label>
+            </div>
+            <div class="col-sm">
+                <input type="url" id="orgUrl" class="form-control" name="orgUrl" th:value="${orgUrl}">
+            </div>
+        </div>
+        <div class="mb-3 row g-3 align-items-center">
+            <div class="col-2">
+                <label for="accessToken" class="form-label">GitHub access token</label>
+            </div>
+            <div class="col-sm">
+                <input type="text" id="accessToken" class="form-control" name="accessToken" th:value="${accessToken}">
+            </div>
+        </div>
+        <!-- Add a checkbox for case sensitivity -->
+        <div class="mb-3 form-check">
+            <input type="checkbox" id="ignoreCase" class="form-check-input" name="ignoreCase"
+                   th:checked="${ignoreCase}">
+            <label for="ignoreCase" class="form-check-label">Ignore case</label>
+            <div class="form-text">when checked, the search will be case-insensitive</div>
+        </div>
+        <button type="submit" class="btn btn-primary">Go</button>
+    </form>
 
-<!-- Display the repository names -->
-<ul th:if="${repoNames}">
-    <li th:each="repoName, stat : ${repoNames}" th:text="${repoName} + ' contains Hello: ' + ${reposContainsHello[stat.index]}"></li>
-</ul>
+    <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+        <span th:text="${errorMessage}"></span>
+    </div>
 
+    <!-- Display the repository names -->
+    <ul th:if="${reposName}" class="list-group">
+        <li th:each="repoName, stat : ${reposName}"
+            th:classappend="${reposContainsHello[stat.index]} ? 'list-group-item-primary' : ''"
+            class="list-group-item w-auto">
+            <a th:href="${reposUrl[stat.index]}" th:text="${repoName}" target="_blank"></a>
+            <small th:text="${reposContainsHello[stat.index]} ? 'contains Hello' : 'does not contain Hello'"></small>
+        </li>
+    </ul>
+</div>
 </body>
 </html>
