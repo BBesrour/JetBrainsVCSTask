@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Form</title>
+</head>
+<body>
+<form action="/submit" method="post">
+    <label for="orgUrl">GitHub organization link</label>
+    <input type="url" id="orgUrl" name="orgUrl" th:value="${orgUrl}">
+    <label for="accessToken">GitHub access token</label>
+    <input type="text" id="accessToken" name="accessToken" th:value="${accessToken}">
+    <!-- Add a checkbox for case sensitivity -->
+    <label for="ignoreCase">Ignore case (When checked, the search will be case-insensitive)</label>
+    <input type="checkbox" id="ignoreCase" name="ignoreCase" th:checked="${ignoreCase}">
+    <button type="submit">Submit</button>
+</form>
+<p th:if="${orgUrl}" th:text="'Organization Name: ' + ${orgName}"></p>
+<p th:if="${accessToken}" th:text="'Access Token: ' + ${accessToken}"></p>
+<p th:if="${errorMessage}" th:text="${errorMessage}" style="color: red;"></p>
+
+<!-- Display the repository names -->
+<ul th:if="${repoNames}">
+    <li th:each="repoName, stat : ${repoNames}" th:text="${repoName} + ' contains Hello: ' + ${reposContainsHello[stat.index]}"></li>
+</ul>
+
+</body>
+</html>
