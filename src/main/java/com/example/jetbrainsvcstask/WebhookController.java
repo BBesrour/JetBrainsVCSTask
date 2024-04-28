@@ -28,7 +28,7 @@ public class WebhookController {
     private SimpMessagingTemplate template;
 
 
-    @PostMapping("/push")
+    @PostMapping()
     public ResponseEntity<Void> push(@RequestHeader("X-GitHub-Hook-ID") String eventID, @RequestHeader("X-GitHub-Event") String eventType, @RequestHeader(required = false) String signature, @RequestBody String payload) {
         // validate the signature
         try {
