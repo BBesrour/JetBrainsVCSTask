@@ -1,5 +1,7 @@
 package com.example.jetbrainsvcstask;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
@@ -12,9 +14,13 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
+
 
 @Controller
 public class WebController {
+
+    private static final Logger logger = LoggerFactory.getLogger(WebController.class);
 
     @Autowired
     private Environment env;
@@ -29,19 +35,36 @@ public class WebController {
         return "form";
     }
 
-    @PostMapping("/submit")
+    @PostMapping("/repos")
     public String submit(@RequestParam String orgUrl, @RequestParam String accessToken, @RequestParam(name = "ignoreCase", defaultValue = "false") boolean ignoreCase, Model model) throws IOException, URISyntaxException, NotFoundException {
         String searchString = env.getProperty("search.string", "Hello");
-        GitHubService gitHubService = new GitHubService(orgUrl, accessToken, ignoreCase, searchString);
+        GitHubOrgService gitHubOrgService = new GitHubOrgService(orgUrl, accessToken, ignoreCase);
 
-        model.addAttribute("orgUrl", gitHubService.getOrgUrl());
-        model.addAttribute("orgName", gitHubService.getOrgName());
+        List<String> reposName = gitHubOrgService.setReposName();
+        List<Boolean> reposContainsHello = gitHubOrgService.setReposContainsHello(reposName, searchString, ignoreCase);
+        if (reposName.size() != reposContainsHello.size()) {
+            logger.error("Number of repository names and repository contents do not match");
+            throw new RuntimeException("Number of repositories, repository names, and repository contents do not match");
+        }
+
+        model.addAttribute("orgUrl", gitHubOrgService.getOrgUrl());
+        model.addAttribute("orgName", gitHubOrgService.getOrgName());
         model.addAttribute("accessToken", accessToken);
         model.addAttribute("ignoreCase", ignoreCase);
 
-        model.addAttribute("reposName", gitHubService.getReposName());
-        model.addAttribute("reposUrl", gitHubService.getReposUrl());
-        model.addAttribute("reposContainsHello", gitHubService.getReposContainsHello());
+        model.addAttribute("reposName", reposName);
+        model.addAttribute("reposContainsHello", reposContainsHello);
+        return "form";
+    }
+
+    @PostMapping("/webhooks")
+    public String listWebhooks(@RequestParam String orgUrl, @RequestParam String accessToken, Model model) throws IOException, URISyntaxException, NotFoundException {
+        GitHubOrgService gitHubOrgService = new GitHubOrgService(orgUrl, accessToken, false);
+        List<GitHubWebhook> webhooks = gitHubOrgService.getWebhooks();
+        model.addAttribute("orgUrl", gitHubOrgService.getOrgUrl());
+        model.addAttribute("orgName", gitHubOrgService.getOrgName());
+        model.addAttribute("accessToken", accessToken);
+        model.addAttribute("webhooks", webhooks);
         return "form";
     }
 }

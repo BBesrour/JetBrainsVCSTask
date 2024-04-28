@@ -13,7 +13,7 @@ import java.net.URISyntaxException;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({IOException.class, RuntimeException.class})
+    @ExceptionHandler({IOException.class, RuntimeException.class,})
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String handleIOException(IOException ex, Model model) {
         model.addAttribute("errorMessage", ex.getMessage());

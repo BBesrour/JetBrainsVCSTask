@@ -7,7 +7,7 @@
 </head>
 <body>
 <div class="container m-2">
-    <form action="/submit" method="post" class="mb-3">
+    <form action="/repos" method="post" class="mb-3">
         <div class="mb-3 row g-3 align-items-center">
             <div class="col-2">
                 <label for="orgUrl" class="form-label">GitHub Organization link</label>
@@ -32,6 +32,7 @@
             <div class="form-text">when checked, the search will be case-insensitive</div>
         </div>
         <button type="submit" class="btn btn-primary">Go</button>
+        <button type="submit" formaction="/webhooks" class="btn btn-secondary">Get Webhooks</button>
     </form>
 
     <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
@@ -39,14 +40,35 @@
     </div>
 
     <!-- Display the repository names -->
-    <ul th:if="${reposName}" class="list-group">
-        <li th:each="repoName, stat : ${reposName}"
-            th:classappend="${reposContainsHello[stat.index]} ? 'list-group-item-primary' : ''"
-            class="list-group-item w-auto">
-            <a th:href="${reposUrl[stat.index]}" th:text="${repoName}" target="_blank"></a>
-            <small th:text="${reposContainsHello[stat.index]} ? 'contains Hello' : 'does not contain Hello'"></small>
-        </li>
-    </ul>
+    <div th:if="${reposName}">
+        <h2>Repositories</h2>
+        <p th:text="${reposName.size()} + ' repositories found'"></p>
+        <ul class="list-group">
+            <li th:each="repoName, stat : ${reposName}"
+                th:classappend="${reposContainsHello[stat.index]} ? 'list-group-item-primary' : ''"
+                class="list-group-item w-auto">
+                <a th:href="@{'https://github.com/' + ${orgName} + '/' + ${repoName}}"
+                   th:text="${repoName}"
+                   target="_blank"></a>
+                <small th:text="${reposContainsHello[stat.index]} ? 'contains Hello' : 'does not contain Hello'"></small>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Display the webhooks -->
+    <div th:if="${webhooks}">
+        <h2>Webhooks</h2>
+        <ul class="list-group">
+            <li th:each="webhook : ${webhooks}" class="list-group-item">
+                <span th:text="${webhook.name}"></span>
+                <span th:text="${webhook.config.configUrl}"></span>
+                <span th:text="${webhook.config.contentType}"></span>
+                <span th:each="event : ${webhook.events}" th:text="${event}"></span>
+                <span th:text="${webhook.active ? 'Active' : 'Inactive'}"></span>
+                <span th:text="${webhook.type}"></span>
+            </li>
+        </ul>
+    </div>
 </div>
 </body>
 </html>
