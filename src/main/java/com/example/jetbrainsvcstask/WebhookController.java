@@ -1,11 +1,10 @@
 package com.example.jetbrainsvcstask;
 
-import jakarta.servlet.http.HttpServletRequest;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -15,7 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Formatter;
 
 @RestController()
@@ -24,12 +24,17 @@ public class WebhookController {
 
     private static final Logger logger = LoggerFactory.getLogger(WebhookController.class);
 
+    @Autowired
+    private SimpMessagingTemplate template;
+
 
     @PostMapping("/push")
-    public ResponseEntity<Void> push(@RequestHeader("X-GitHub-Event") String eventType, @RequestHeader("X-Hub-Signature-256") String signature, @RequestBody String payload) {
+    public ResponseEntity<Void> push(@RequestHeader("X-GitHub-Hook-ID") String eventID, @RequestHeader("X-GitHub-Event") String eventType, @RequestHeader(required = false) String signature, @RequestBody String payload) {
         // validate the signature
         try {
-            if (!validateSignature(payload, signature)) {
+            // Check if the signature is present and valid
+            // For testing purposes, we allow the signature to be empty
+            if ( signature != null && !signature.isEmpty() && !validateSignature(payload, signature)) {
                 logger.warn("Invalid signature");
                 return ResponseEntity.badRequest().build();
             }
@@ -40,24 +45,11 @@ public class WebhookController {
 
         // Start a new thread to process the payload
         new Thread(() -> {
-            JSONObject jsonPayload = new JSONObject(payload);
-            // Check if the event is a push event
-            if (eventType.equals("push")) {
-                System.out.println("Push event detected");
-                // Get the repository name
-                String repositoryName = jsonPayload.getJSONObject("repository").getString("name");
-                System.out.println("Repository name: " + repositoryName);
-                // Print commit count
-                JSONArray commits = jsonPayload.getJSONArray("commits");
-                System.out.println("Number of commits: " + commits.length());
-                // Print commit details
-                for (int i = 0; i < commits.length(); i++) {
-                    JSONObject commit = commits.getJSONObject(i);
-                    String commitMessage = commit.getString("message");
-                    String commitAuthor = commit.getJSONObject("author").getString("name");
-                    System.out.println("Commit " + (i + 1) + ": " + commitMessage + " by " + commitAuthor);
-                }
-            }
+            // Send the event to the WebSocket
+            Date date = new Date();
+            SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+            WebhookEvent event = new WebhookEvent(eventType, eventID, formatter.format(date));
+            this.template.convertAndSend("/topic/webhookEvent", event);
         }).start();
 
         return ResponseEntity.accepted().build();

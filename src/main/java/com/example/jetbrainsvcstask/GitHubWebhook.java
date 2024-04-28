@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-
+// POJO class for GitHub Webhook
 public class GitHubWebhook {
 
     private String name;
@@ -12,7 +12,8 @@ public class GitHubWebhook {
     private List<String> events;
     private boolean active;
     private String type;
-    private String secret;
+    @JsonProperty("created_at")
+    private String createdAt;
 
     public static class Config {
         public String getContentType() {
@@ -35,6 +36,17 @@ public class GitHubWebhook {
         private String configUrl;
         @JsonProperty("content_type")
         private String contentType;
+
+        public String getSecret() {
+            return secret;
+        }
+
+        public void setSecret(String secret) {
+            this.secret = secret;
+        }
+
+        private String secret;
+
     }
 
     public String getName() {
@@ -77,12 +89,13 @@ public class GitHubWebhook {
         this.type = type;
     }
 
-    public String getSecret() {
-        return secret;
+    public String getCreatedAt() {
+        return createdAt;
     }
 
-    public void setSecret(String secret) {
-        this.secret = secret;
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
     }
+
 
 }

@@ -1,6 +1,5 @@
 package com.example.jetbrainsvcstask;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONArray;
@@ -32,7 +31,7 @@ public class GitHubOrgService {
     private static final String WEBHOOKS_API = "https://api.github.com/orgs/%s/hooks";
 
 
-    public GitHubOrgService(String orgUrl, String accessToken, boolean ignoreCase) throws IOException, URISyntaxException, NotFoundException {
+    public GitHubOrgService(String orgUrl, String accessToken) throws IOException, URISyntaxException {
         this.orgUrl = orgUrl;
         this.accessToken = accessToken;
         setOrgNameFromUrl();
@@ -123,8 +122,9 @@ public class GitHubOrgService {
     }
 
     public GitHubWebhook createWebhook(GitHubWebhook webhook) throws IOException, NotFoundException, URISyntaxException {
-        // Convert the GitHubWebhook object to a JSON object
+        // Convert the GitHubWebhook object to JSON
         ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         String json = mapper.writeValueAsString(webhook);
         try {
             // Send a POST request to create a new webhook
@@ -150,14 +150,16 @@ public class GitHubOrgService {
         return orgName;
     }
 
-    public void setOrgName(String orgName) {
-        this.orgName = orgName;
-    }
 
+    // Helper methods
+
+    // Send a GET request to the specified URL
     public static String sendGetRequest(String url, String accessToken, String acceptHeader) throws IOException, URISyntaxException, NotFoundException {
         return sendRequest("GET", url, accessToken, acceptHeader, null);
     }
 
+
+    // Send a POST request to the specified URL
     public static String sendPostRequest(String url, String accessToken, String acceptHeader, byte[] body) throws IOException, URISyntaxException, NotFoundException {
         return sendRequest("POST", url, accessToken, acceptHeader, body);
     }
@@ -180,7 +182,7 @@ public class GitHubOrgService {
         int responseCode = conn.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
             throw new NotFoundException("Resource not found");
-        } else if (responseCode != HttpURLConnection.HTTP_OK) {
+        } else if (responseCode != HttpURLConnection.HTTP_OK && responseCode != HttpURLConnection.HTTP_CREATED) {
             throw new IOException("Failed : HTTP error code : " + responseCode);
         }
 

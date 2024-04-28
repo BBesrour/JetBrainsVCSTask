@@ -38,7 +38,7 @@ public class WebController {
     @PostMapping("/repos")
     public String submit(@RequestParam String orgUrl, @RequestParam String accessToken, @RequestParam(name = "ignoreCase", defaultValue = "false") boolean ignoreCase, Model model) throws IOException, URISyntaxException, NotFoundException {
         String searchString = env.getProperty("search.string", "Hello");
-        GitHubOrgService gitHubOrgService = new GitHubOrgService(orgUrl, accessToken, ignoreCase);
+        GitHubOrgService gitHubOrgService = new GitHubOrgService(orgUrl, accessToken);
 
         List<String> reposName = gitHubOrgService.setReposName();
         List<Boolean> reposContainsHello = gitHubOrgService.setReposContainsHello(reposName, searchString, ignoreCase);
@@ -59,12 +59,30 @@ public class WebController {
 
     @PostMapping("/webhooks")
     public String listWebhooks(@RequestParam String orgUrl, @RequestParam String accessToken, Model model) throws IOException, URISyntaxException, NotFoundException {
-        GitHubOrgService gitHubOrgService = new GitHubOrgService(orgUrl, accessToken, false);
+        GitHubOrgService gitHubOrgService = new GitHubOrgService(orgUrl, accessToken);
         List<GitHubWebhook> webhooks = gitHubOrgService.getWebhooks();
         model.addAttribute("orgUrl", gitHubOrgService.getOrgUrl());
         model.addAttribute("orgName", gitHubOrgService.getOrgName());
         model.addAttribute("accessToken", accessToken);
         model.addAttribute("webhooks", webhooks);
+        return "form";
+    }
+
+    @PostMapping("/create-webhook")
+    public String createWebhook(@RequestParam String orgUrl, @RequestParam String accessToken, @RequestParam String webhookUrl, @RequestParam String webhookSecret, @RequestParam String events, @RequestParam(name = "active", defaultValue = "false") boolean active, Model model) throws IOException, URISyntaxException, NotFoundException {
+        GitHubOrgService gitHubOrgService = new GitHubOrgService(orgUrl, accessToken);
+        GitHubWebhook webhook = new GitHubWebhook();
+        webhook.setConfig(new GitHubWebhook.Config());
+        webhook.getConfig().setConfigUrl(webhookUrl);
+        webhook.getConfig().setContentType("json");
+        webhook.setEvents(List.of(events.split(",")));
+        webhook.setActive(active);
+        webhook.getConfig().setSecret(webhookSecret);
+        webhook.setName("web");
+        gitHubOrgService.createWebhook(webhook);
+        model.addAttribute("orgUrl", gitHubOrgService.getOrgUrl());
+        model.addAttribute("orgName", gitHubOrgService.getOrgName());
+        model.addAttribute("accessToken", accessToken);
         return "form";
     }
 }

@@ -4,70 +4,131 @@
     <title>Form</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <script src="/app.js"></script>
 </head>
 <body>
-<div class="container m-2">
-    <form action="/repos" method="post" class="mb-3">
-        <div class="mb-3 row g-3 align-items-center">
-            <div class="col-2">
-                <label for="orgUrl" class="form-label">GitHub Organization link</label>
+<div class="container-fluid m-2 d-flex justify-content-between align-items-start">
+    <div class="w-50">
+        <form action="/repos" method="post" class="mb-3">
+            <div class="mb-3 row g-3 align-items-center">
+                <div class="col-2">
+                    <label for="orgUrl" class="form-label">GitHub Organization link</label>
+                </div>
+                <div class="col-sm">
+                    <input type="url" id="orgUrl" class="form-control" name="orgUrl" th:value="${orgUrl}">
+                </div>
             </div>
-            <div class="col-sm">
-                <input type="url" id="orgUrl" class="form-control" name="orgUrl" th:value="${orgUrl}">
+            <div class="mb-3 row g-3 align-items-center">
+                <div class="col-2">
+                    <label for="accessToken" class="form-label">GitHub access token</label>
+                </div>
+                <div class="col-sm">
+                    <input type="text" id="accessToken" class="form-control" name="accessToken"
+                           th:value="${accessToken}">
+                </div>
             </div>
-        </div>
-        <div class="mb-3 row g-3 align-items-center">
-            <div class="col-2">
-                <label for="accessToken" class="form-label">GitHub access token</label>
+            <!-- Add a checkbox for case sensitivity -->
+            <div class="mb-3 form-check">
+                <input type="checkbox" id="ignoreCase" class="form-check-input" name="ignoreCase"
+                       th:checked="${ignoreCase}">
+                <label for="ignoreCase" class="form-check-label">Ignore case</label>
+                <div class="form-text">when checked, the search will be case-insensitive</div>
             </div>
-            <div class="col-sm">
-                <input type="text" id="accessToken" class="form-control" name="accessToken" th:value="${accessToken}">
+            <div class="mb-3">
+                <h4>Webhook</h4>
+                <small>Fill in the fields below to create a webhook. Make sure you have the necessary
+                    permissions.</small>
             </div>
-        </div>
-        <!-- Add a checkbox for case sensitivity -->
-        <div class="mb-3 form-check">
-            <input type="checkbox" id="ignoreCase" class="form-check-input" name="ignoreCase"
-                   th:checked="${ignoreCase}">
-            <label for="ignoreCase" class="form-check-label">Ignore case</label>
-            <div class="form-text">when checked, the search will be case-insensitive</div>
-        </div>
-        <button type="submit" class="btn btn-primary">Go</button>
-        <button type="submit" formaction="/webhooks" class="btn btn-secondary">Get Webhooks</button>
-    </form>
+            <div class="mb-3 row g-3 align-items-center">
+                <div class="col-2">
+                    <label for="webhookUrl" class="form-label">Webhook URL</label>
+                </div>
+                <div class="col-sm">
+                    <input type="url" id="webhookUrl" class="form-control" name="webhookUrl">
+                </div>
+            </div>
+            <div class="mb-3 row g-3 align-items-center">
+                <div class="col-2">
+                    <label for="events" class="form-label">Events</label>
+                </div>
+                <div class="col-sm">
+                    <input type="text" id="events" class="form-control" name="events">
+                    <small class="form-text">Comma-separated list of events. Example: push,pull_request,issues</small>
+                </div>
+            </div>
+            <div class="mb-3 row g-3 align-items-center">
+                <div class="col-2">
+                    <label for="webhookSecret" class="form-label">Secret</label>
+                </div>
+                <div class="col-sm">
+                    <input type="text" id="webhookSecret" class="form-control" name="webhookSecret">
+                </div>
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" id="active" class="form-check-input" name="active">
+                <label for="active" class="form-check-label">Active</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Go</button>
+            <button type="submit" formaction="/webhooks" class="btn btn-secondary">Get Webhooks</button>
+            <button type="submit" formaction="/create-webhook" class="btn btn-danger">Create Webhook</button>
 
-    <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
-        <span th:text="${errorMessage}"></span>
+        </form>
+
+        <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <!-- Success message -->
+        <div th:if="${successMessage}" class="alert alert-success" role="alert">
+            <span th:text="${successMessage}"></span>
+        </div>
+
+        <!-- Display the repository names -->
+        <div th:if="${reposName}">
+            <h2>Repositories</h2>
+            <p th:text="${reposName.size()} + ' repositories found'"></p>
+            <ul class="list-group">
+                <li th:each="repoName, stat : ${reposName}"
+                    th:classappend="${reposContainsHello[stat.index]} ? 'list-group-item-primary' : ''"
+                    class="list-group-item w-auto">
+                    <a th:href="@{'https://github.com/' + ${orgName} + '/' + ${repoName}}"
+                       th:text="${repoName}"
+                       target="_blank"></a>
+                    <small th:text="${reposContainsHello[stat.index]} ? 'contains Hello' : 'does not contain Hello'"></small>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Display the webhooks -->
+        <div th:if="${webhooks}">
+            <h2>Webhooks</h2>
+            <ul class="list-group">
+                <li th:each="webhook : ${webhooks}" class="list-group-item w-50">
+                    <div class="d-flex justify-content-between">
+                        <h5 class="mb-1" th:text="${webhook.config.configUrl}"></h5>
+                        <small th:text="${webhook.active ? 'Active' : 'Inactive'}"></small>
+                    </div>
+                    <p class="mb-1" th:text="'Events: ' + ${webhook.events}"></p>
+                    <small th:text="'Created at: ' + ${webhook.createdAt}"></small>
+                </li>
+            </ul>
+        </div>
     </div>
-
-    <!-- Display the repository names -->
-    <div th:if="${reposName}">
-        <h2>Repositories</h2>
-        <p th:text="${reposName.size()} + ' repositories found'"></p>
-        <ul class="list-group">
-            <li th:each="repoName, stat : ${reposName}"
-                th:classappend="${reposContainsHello[stat.index]} ? 'list-group-item-primary' : ''"
-                class="list-group-item w-auto">
-                <a th:href="@{'https://github.com/' + ${orgName} + '/' + ${repoName}}"
-                   th:text="${repoName}"
-                   target="_blank"></a>
-                <small th:text="${reposContainsHello[stat.index]} ? 'contains Hello' : 'does not contain Hello'"></small>
-            </li>
-        </ul>
-    </div>
-
-    <!-- Display the webhooks -->
-    <div th:if="${webhooks}">
-        <h2>Webhooks</h2>
-        <ul class="list-group">
-            <li th:each="webhook : ${webhooks}" class="list-group-item">
-                <span th:text="${webhook.name}"></span>
-                <span th:text="${webhook.config.configUrl}"></span>
-                <span th:text="${webhook.config.contentType}"></span>
-                <span th:each="event : ${webhook.events}" th:text="${event}"></span>
-                <span th:text="${webhook.active ? 'Active' : 'Inactive'}"></span>
-                <span th:text="${webhook.type}"></span>
-            </li>
-        </ul>
+    <div class="w-25">
+        <h2>Webhook Events</h2>
+        <form class="form-inline" id="webhookForm">
+            <div class="form-group">
+                <label for="connect">WebSocket connection:</label>
+                <button id="connect" class="btn btn-outline-primary" type="submit">Connect</button>
+                <button id="disconnect" class="btn btn-outline-danger" type="submit" disabled="disabled">Disconnect
+                </button>
+            </div>
+        </form>
+        <div id="webhookEvents" class="mt-3">
+            <ul class="list-group" id="webhookEventsList">
+            </ul>
+        </div>
     </div>
 </div>
 </body>
