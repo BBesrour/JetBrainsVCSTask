@@ -1,4 +1,4 @@
-package com.example.jetbrainsvcstask;
+package com.example.jetbrainsvcstask.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

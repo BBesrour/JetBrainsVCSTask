@@ -1,5 +1,9 @@
-package com.example.jetbrainsvcstask;
+package com.example.jetbrainsvcstask.controller;
 
+import com.example.jetbrainsvcstask.NotFoundException;
+import com.example.jetbrainsvcstask.domain.GitHubWebhook;
+import com.example.jetbrainsvcstask.service.GitHubOrgService;
+import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +62,7 @@ public class WebController {
     }
 
     @PostMapping("/webhooks")
-    public String listWebhooks(@RequestParam String orgUrl, @RequestParam String accessToken, Model model) throws IOException, URISyntaxException, NotFoundException {
+    public String listWebhooks(@RequestParam String orgUrl, @RequestParam String accessToken, Model model) throws IOException, URISyntaxException {
         GitHubOrgService gitHubOrgService = new GitHubOrgService(orgUrl, accessToken);
         List<GitHubWebhook> webhooks = gitHubOrgService.getWebhooks();
         model.addAttribute("orgUrl", gitHubOrgService.getOrgUrl());
@@ -73,8 +77,14 @@ public class WebController {
         GitHubOrgService gitHubOrgService = new GitHubOrgService(orgUrl, accessToken);
         GitHubWebhook webhook = new GitHubWebhook();
         webhook.setConfig(new GitHubWebhook.Config());
+        if (webhookUrl.isEmpty()) {
+            throw new BadRequestException("Webhook URL is empty");
+        }
         webhook.getConfig().setConfigUrl(webhookUrl);
         webhook.getConfig().setContentType("json");
+        if (events.isEmpty()) {
+            throw new BadRequestException("Events are empty");
+        }
         webhook.setEvents(List.of(events.split(",")));
         webhook.setActive(active);
         webhook.getConfig().setSecret(webhookSecret);

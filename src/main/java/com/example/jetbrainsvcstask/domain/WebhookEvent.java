@@ -1,4 +1,4 @@
-package com.example.jetbrainsvcstask;
+package com.example.jetbrainsvcstask.domain;
 
 public class WebhookEvent {
     private String eventType;

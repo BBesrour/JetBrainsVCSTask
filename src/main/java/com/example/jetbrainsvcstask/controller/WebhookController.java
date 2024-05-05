@@ -1,5 +1,6 @@
-package com.example.jetbrainsvcstask;
+package com.example.jetbrainsvcstask.controller;
 
+import com.example.jetbrainsvcstask.domain.WebhookEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,5 +1,7 @@
-package com.example.jetbrainsvcstask;
+package com.example.jetbrainsvcstask.service;
 
+import com.example.jetbrainsvcstask.domain.GitHubWebhook;
+import com.example.jetbrainsvcstask.NotFoundException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONArray;

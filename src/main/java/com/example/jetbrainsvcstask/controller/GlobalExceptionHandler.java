@@ -1,5 +1,7 @@
-package com.example.jetbrainsvcstask;
+package com.example.jetbrainsvcstask.controller;
 
+import com.example.jetbrainsvcstask.NotFoundException;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -19,7 +21,7 @@ public class GlobalExceptionHandler {
         model.addAttribute("errorMessage", ex.getMessage());
         return "form";
     }
-    @ExceptionHandler({MalformedURLException.class, URISyntaxException.class})
+    @ExceptionHandler({MalformedURLException.class, URISyntaxException.class, BadRequestException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public String handleUrlExceptions(Exception ex, Model model) {
         model.addAttribute("errorMessage", ex.getMessage());

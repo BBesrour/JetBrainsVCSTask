@@ -38,7 +38,7 @@
             <div class="mb-3">
                 <h4>Webhook</h4>
                 <small>Fill in the fields below to create a webhook. Make sure you have the necessary
-                    permissions.</small>
+                    permissions. Please follow the instructions in the README file for local testing.</small>
             </div>
             <div class="mb-3 row g-3 align-items-center">
                 <div class="col-2">
@@ -95,7 +95,7 @@
                     <a th:href="@{'https://github.com/' + ${orgName} + '/' + ${repoName}}"
                        th:text="${repoName}"
                        target="_blank"></a>
-                    <small th:text="${reposContainsHello[stat.index]} ? 'contains Hello' : 'does not contain Hello'"></small>
+                    <small th:text="${reposContainsHello[stat.index]} ? ' README contains Hello' : 'README does not exist or does not contain Hello'"></small>
                 </li>
             </ul>
         </div>
@@ -117,11 +117,13 @@
     </div>
     <div class="w-25">
         <h2>Webhook Events</h2>
+        <small>To receive webhook events, click the Connect button below. The events will be displayed in the list
+            below.</small>
         <form class="form-inline" id="webhookForm">
             <div class="form-group">
                 <label for="connect">WebSocket connection:</label>
-                <button id="connect" class="btn btn-outline-primary" type="submit">Connect</button>
-                <button id="disconnect" class="btn btn-outline-danger" type="submit" disabled="disabled">Disconnect
+                <button id="connect" class="btn btn-primary" type="submit">Connect</button>
+                <button id="disconnect" class="btn btn-secondary" type="submit" disabled="disabled">Disconnect
                 </button>
             </div>
         </form>
