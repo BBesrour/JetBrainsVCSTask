@@ -9,6 +9,17 @@ As a demonstration for the actual problem, the user can view and create webhooks
 organization (Make sure that the access token has the necessary permissions). With
 some additional setup, the page gets updated in real-time when a webhook is triggered.
 
+## Technical Description
+The application is a Spring Boot application that uses Thymeleaf for the frontend. I chose 
+Thymeleaf because it is easy to integrate with Spring Boot and is a good choice for simple
+web applications. The application uses the GitHub API to fetch the repositories of an organization
+and check the contents of the README file:
+
+1. We extract the organization name from the give URL.
+2. We use the GitHub API to fetch the repositories of the organization. We get a JSON array where each object represents a repository.
+3. We extract the name of the repository and through another API call, we get the contents of the README file.
+4. We check if the README file contains the word "Hello".
+
 ## How to Use
 1. Enter the name of the organization and the access token (with the necessary permissions)
 2. Click on "Go" to view the repositories of the organization. The repositories with a README file that contains the word "Hello" are highlighted.
